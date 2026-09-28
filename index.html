@@ -434,7 +434,7 @@
             <span>Remember Me</span>
           </div>
 
-          <button class="login-btn" id="loginBtn">Log In</button>
+          <button class="login-btn" id="loginBtn" onclick="handleLogin()">Log In</button>
 
           <div class="forgot-links">
             <a href="#">Forgot Company ID or User Name?</a>
@@ -482,22 +482,6 @@
 
 </div>
 
-<!-- Complete card -->
-<div class="complete-card" id="completeCard">
-  <div class="complete-top">✓ You're ready to log in to Bill4Time</div>
-  <div class="complete-body">
-    Here's a quick summary of what to remember every time you log in:
-    <ul>
-      <li><strong>URL:</strong> https://secure.bill4time.com/b4t2/ — bookmark it</li>
-      <li><strong>Company ID:</strong> always <strong>Morgan</strong></li>
-      <li><strong>Credentials:</strong> check your onboarding email for your username and temporary password</li>
-      <li><strong>Keep it open</strong> all day — log time in real time throughout your shift</li>
-    </ul>
-  </div>
-  <div class="complete-footer">
-    <button class="btn-restart" onclick="goToStep(0)">Start Over</button>
-  </div>
-</div>
 
 <script>
   const steps = [
@@ -521,8 +505,8 @@
     },
     {
       num: '4', title: 'Click Log In',
-      body: `Once all fields are filled in, click the <strong>Log In</strong> button to access your dashboard.<br><br>After logging in, keep Bill4Time open for your entire shift. You should be logging time throughout the day — not at the end.`,
-      tip: '💡 Do not close Bill4Time. Keep it open in a pinned tab all day.',
+      body: `Once all fields are filled in, click the <strong>Log In</strong> button on the form to continue.<br><br>After logging in, keep Bill4Time open for your entire shift — log time throughout the day, not at the end.`,
+      tip: '💡 Try it — click the Log In button on the form to the right.',
       highlight: null, fillCompany: true, fillUser: true, fillPass: true, highlightBtn: true
     }
   ];
@@ -557,17 +541,49 @@
     if (s.highlight) document.getElementById(s.highlight).classList.add('highlighted');
     if (s.highlightBtn) document.getElementById('loginBtn').classList.add('highlighted');
 
-    // Buttons
+    // On step 4, hide Next — learner must click Log In first
+    const nextBtn = document.getElementById('nextBtn');
+    if (idx === steps.length - 1) {
+      nextBtn.style.display = 'none';
+    } else {
+      nextBtn.style.display = '';
+      nextBtn.textContent = 'Next →';
+    }
+
     document.getElementById('prevBtn').disabled = idx === 0;
-    document.getElementById('nextBtn').textContent = idx === steps.length - 1 ? 'Finish ✓' : 'Next →';
 
     // Progress dots
     document.querySelectorAll('.dot').forEach((d, i) => {
       d.className = 'dot' + (i < idx ? ' done' : i === idx ? ' active' : '');
     });
+  }
 
-    // Complete card
-    document.getElementById('completeCard').style.display = idx === steps.length - 1 ? 'block' : 'none';
+  function handleLogin() {
+    if (current !== steps.length - 1) return;
+    // Animate the button
+    const btn = document.getElementById('loginBtn');
+    btn.textContent = '✓ Logged In!';
+    btn.style.background = '#1a5a1a';
+    btn.style.animation = 'none';
+    btn.style.boxShadow = '0 0 0 3px rgba(26,90,26,0.25)';
+    btn.onclick = null;
+
+    // Update instruction panel
+    document.getElementById('instTitle').textContent = '✓ You\'re logged in!';
+    document.getElementById('instBody').innerHTML = `
+      Great work — you have successfully logged in to Bill4Time.<br><br>
+      Remember to keep it <strong>open all day</strong> and log time throughout your shift — not at the end.
+      <div class="inst-tip">💡 Do not close Bill4Time. Keep it open in a pinned tab all day.</div>
+    `;
+
+    // Show Finish button
+    const nextBtn = document.getElementById('nextBtn');
+    nextBtn.style.display = '';
+    nextBtn.textContent = 'Finish ✓';
+    nextBtn.onclick = () => goToStep(0);
+
+    // Mark all dots done
+    document.querySelectorAll('.dot').forEach(d => d.className = 'dot done');
   }
 
   function changeStep(dir) {
@@ -579,6 +595,13 @@
 
   function goToStep(idx) {
     current = idx;
+    // Reset login button
+    const btn = document.getElementById('loginBtn');
+    btn.textContent = 'Log In';
+    btn.style.background = '';
+    btn.style.boxShadow = '';
+    btn.onclick = handleLogin;
+    document.getElementById('nextBtn').onclick = () => changeStep(1);
     applyStep(current);
   }
 
